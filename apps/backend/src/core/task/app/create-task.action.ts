@@ -6,7 +6,7 @@ import { PostgresTaskRepository } from "@mimir/backend/core/task/infra/postgres.
 import { CreateTask } from "@mimir/backend/core/task/use-cases/create-task";
 import { PostgresUserRepository } from "@mimir/backend/core/user/infra/postgres.user.repository";
 
-import { ConsoleLogger } from "@mimir/backend/lib/console-logger";
+import { PinoLogger } from "@mimir/backend/lib/pino-logger";
 
 import { taskResponseSchema } from "./task-response.schema";
 
@@ -41,7 +41,7 @@ const route = createRoute({
 export const createTask = new OpenAPIHono().openapi(route, async (c) => {
   const body = c.req.valid("json");
   const createTaskUseCase = new CreateTask(
-    new ConsoleLogger(),
+    PinoLogger.instance,
     new PostgresTaskRepository(),
     new EventBridgeTaskEvents(),
     new PostgresUserRepository(),
