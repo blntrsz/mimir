@@ -1,13 +1,11 @@
 import { z } from "zod";
 
 export const paginatedQueryParamsSchema = z.object({
-  limit: z.number().min(10),
-  page: z.number().min(1).default(1),
-  offset: z.number().default(0),
-  orderBy: z.object({
-    field: z.string().or(z.boolean()),
-    param: z.enum(["asc", "desc"]),
-  }),
+  limit: z.coerce.number().min(10).max(100),
+  page: z.coerce.number().min(1).default(1),
+  offset: z.coerce.number().default(0),
+  field: z.string().or(z.boolean()).default("id"),
+  order: z.enum(["asc", "desc"]).default("asc"),
 });
 
 export type PaginatedQueryParams = z.infer<typeof paginatedQueryParamsSchema>;

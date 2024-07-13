@@ -25,7 +25,8 @@
 
     "baseUrl": ".",
     "paths": {
-      "@mimir/backend/*": ["../backend/src/*"]
+      "@mimir/backend/*": ["../backend/src/*"],
+      "@mimir/frontend/*": ["./src/*"]
     }
   },
   "include": ["src"]

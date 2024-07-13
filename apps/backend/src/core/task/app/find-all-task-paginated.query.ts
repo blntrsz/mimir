@@ -1,5 +1,4 @@
-import { zValidator } from "@hono/zod-validator";
-import { createFactory } from "hono/factory";
+import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 
 import { PostgresTaskRepository } from "@mimir/backend/core/task/infra/postgres.task.repository";
 import { FindAllTaskPaginated } from "@mimir/backend/core/task/use-cases/find-all-task-paginated";
@@ -7,14 +6,36 @@ import { FindAllTaskPaginated } from "@mimir/backend/core/task/use-cases/find-al
 import { paginatedQueryParamsSchema } from "@mimir/backend/lib/paginated";
 import { PinoLogger } from "@mimir/backend/lib/pino-logger";
 
-export const findAllTaskPaginatedHandlers = createFactory().createHandlers(
-  zValidator("query", paginatedQueryParamsSchema),
+import { Task } from "../domain/task";
+import { taskResponseSchema } from "./task-response.schema";
+
+const route = createRoute({
+  method: "get",
+  path: `/`,
+  tags: [Task.type],
+  request: {
+    query: paginatedQueryParamsSchema,
+  },
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: z.array(taskResponseSchema),
+        },
+      },
+      description: "Retrieve the tasks paginated",
+    },
+  },
+});
+
+export const findAllTaskPaginated = new OpenAPIHono().openapi(
+  route,
   async (c) => {
-    const query = c.req.valid("query");
     const createTaskUseCase = new FindAllTaskPaginated(
       PinoLogger.instance,
       new PostgresTaskRepository(),
     );
+    const query = c.req.valid("query");
     const tasks = await createTaskUseCase.onRequest(query);
 
     return c.json(tasks.data.map((task) => task.toResponse()));

@@ -1,25 +1,23 @@
 import { useRequestContext } from "./request.context";
 
+export type Ok<T> = [T, undefined];
+export type Err<T> = [undefined, T];
+
 export abstract class Exception extends Error {
   abstract code: string;
   abstract message: string;
   abstract status?: number;
 
   toResponse() {
-    return new Response(
-      JSON.stringify({
-        errors: [
-          {
-            id: useRequestContext().awsRequestId,
-            code: this.code,
-            title: this.message,
-          },
-        ],
-      }),
-      {
-        status: this.status,
-      },
-    );
+    return {
+      errors: [
+        {
+          id: useRequestContext().requestId,
+          code: this.code,
+          title: this.message,
+        },
+      ],
+    } as const;
   }
 }
 

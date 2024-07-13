@@ -4,9 +4,9 @@ import { Entity, timestamps } from "@mimir/backend/lib/entity";
 
 export const taskSchema = z.object({
   id: z.string(),
-  user_id: z.string().optional(),
+  user_id: z.string().nullable(),
   description: z.string(),
-  done_at: z.date().optional(),
+  done_at: z.date().nullable(),
   ...timestamps,
 });
 
@@ -28,7 +28,7 @@ export class Task implements Entity {
       attributes: {
         user_id: this.props.user_id,
         description: this.props.description,
-        done_at: this.props.done_at?.toString(),
+        done_at: this.props.done_at ? this.props.done_at?.toString() : null,
       },
     };
   }

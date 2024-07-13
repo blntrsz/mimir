@@ -1,29 +1,70 @@
-import { zValidator } from "@hono/zod-validator";
-import { createFactory } from "hono/factory";
+import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 
-import { userSchema } from "@mimir/backend/core/user/domain/user";
+import { User, userSchema } from "@mimir/backend/core/user/domain/user";
 import { EventBridgeUserEvents } from "@mimir/backend/core/user/infra/event-bridge.user.events";
 import { PostgresUserRepository } from "@mimir/backend/core/user/infra/postgres.user.repository";
 import { CreateUser } from "@mimir/backend/core/user/use-cases/create-user";
 
-import { ConsoleLogger } from "@mimir/backend/lib/console-logger";
+import { AlreadyExistsException } from "@mimir/backend/lib/exception";
+import { PinoLogger } from "@mimir/backend/lib/pino-logger";
 
-export const createUserHandlers = createFactory().createHandlers(
-  zValidator(
-    "json",
-    userSchema.pick({
-      email: true,
-    }),
-  ),
-  async (c) => {
-    const body = c.req.valid("json");
-    const createUserUseCase = new CreateUser(
-      new ConsoleLogger(),
-      new PostgresUserRepository(),
-      new EventBridgeUserEvents(),
-    );
-    const user = await createUserUseCase.onRequest(body);
+import { userResponseSchema } from "./user-response.schema";
 
-    return c.json(user.toResponse());
+const route = createRoute({
+  method: "post",
+  path: `/`,
+  tags: [User.type],
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: userSchema.pick({
+            email: true,
+          }),
+        },
+      },
+    },
   },
-);
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: userResponseSchema,
+        },
+      },
+      description: "Retrieve the tasks paginated",
+    },
+    409: {
+      content: {
+        "application/json": {
+          schema: z.object({
+            errors: z.array(
+              z.object({
+                id: z.string().uuid(),
+                title: z.literal(new AlreadyExistsException("User").message),
+                code: z.literal(new AlreadyExistsException("User").code),
+              }),
+            ),
+          }),
+        },
+      },
+      description: "The User already exists",
+    },
+  },
+});
+
+export const createUser = new OpenAPIHono().openapi(route, async (c) => {
+  const body = c.req.valid("json");
+  const createUserUseCase = new CreateUser(
+    PinoLogger.instance,
+    new PostgresUserRepository(),
+    new EventBridgeUserEvents(),
+  );
+  const [user, error] = await createUserUseCase.onRequest(body);
+
+  if (error) {
+    return c.json(error.toResponse(), 409);
+  }
+
+  return c.json(user.toResponse(), 200);
+});

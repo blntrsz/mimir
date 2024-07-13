@@ -1,7 +1,7 @@
 import { Context } from "./context";
 
 const RequestContext = Context.create<{
-  awsRequestId: string;
+  requestId: string;
   ["x-correlation-id"]: string;
   ["x-correlation-trace-id"]: string;
 }>("RequestContext");
