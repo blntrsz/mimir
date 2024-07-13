@@ -1,11 +1,11 @@
 {
-  "files": [],
-  "references": [
-    {
-      "path": "./tsconfig.app.json"
-    },
-    {
-      "path": "./tsconfig.node.json"
+  "extends": "@tsconfig/vite-react/tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@mimir/backend/*": ["../backend/src/*"],
+      "@mimir/frontend/*": ["./src/*"]
     }
-  ]
+  },
+  "include": ["src"]
 }
