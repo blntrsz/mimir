@@ -1,0 +1,35 @@
+{
+  "name": "@mimir/backend",
+  "version": "1.0.0",
+  "scripts": {
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "dev": "dotenvx run --env-file=.env -- tsx --watch src/api | roarr pretty-print"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-eventbridge": "^3.614.0",
+    "@hono/node-server": "^1.12.0",
+    "@hono/zod-openapi": "^0.14.9",
+    "@hono/zod-validator": "^0.2.2",
+    "@slonik/migrator": "^0.12.0",
+    "better-sqlite3": "^11.1.2",
+    "dotenv": "^16.4.5",
+    "drizzle-kit": "^0.22.8",
+    "drizzle-orm": "^0.31.2",
+    "hono": "^4.4.11",
+    "pg-mem": "^2.8.1",
+    "pino": "^9.2.0",
+    "slonik": "32",
+    "tsx": "^4.16.2",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@dotenvx/dotenvx": "^1.6.2",
+    "@roarr/cli": "^5.12.4",
+    "@tsconfig/recommended": "^1.0.7",
+    "@types/better-sqlite3": "^7.6.11"
+  }
+}
