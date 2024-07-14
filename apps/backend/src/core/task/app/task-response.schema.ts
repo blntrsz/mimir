@@ -63,6 +63,7 @@ const taskSchema = z
 export const taskResponseSchema = z.object({
   data: taskSchema,
 });
+export type TaskResponseSchema = z.infer<typeof taskResponseSchema>;
 export const tasksResponseSchema = z.object({
   links: z.object({
     prev: z.string().nullable(),
@@ -70,3 +71,4 @@ export const tasksResponseSchema = z.object({
   }),
   data: z.array(taskSchema),
 });
+export type TasksResponseSchema = z.infer<typeof tasksResponseSchema>;

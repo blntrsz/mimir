@@ -19,7 +19,7 @@ export type TaskSchema = z.infer<typeof taskSchema>;
 export class Task extends Entity<TaskSchema> {
   static readonly type = "tasks";
 
-  constructor(readonly props: z.infer<typeof taskSchema>) {
+  constructor(readonly props: TaskSchema) {
     super();
   }
 

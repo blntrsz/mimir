@@ -19,4 +19,5 @@ CREATE TABLE tasks (
 );
 
 -- +goose Down
+DROP TABLE tasks;
 DROP TABLE users;

@@ -6,18 +6,25 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 import "./index.css";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 
-import { Home } from "./pages/home/index.tsx";
-import { homeLoader } from "./pages/home/loader.ts";
-
-const queryClient = new QueryClient();
+import { queryClient } from "./api/queryClient.ts";
+import { Layout } from "./features/layout.tsx";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Home />,
-    loader: homeLoader(queryClient),
+    element: <Layout />,
+    children: [
+      {
+        path: "/",
+        lazy: () => import("./pages/home"),
+      },
+      {
+        path: "/:task_id",
+        lazy: () => import("./pages/task"),
+      },
+    ],
   },
 ]);
 

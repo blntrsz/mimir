@@ -1,5 +1,6 @@
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 
+import { Task } from "@mimir/backend/core/task/domain/task";
 import { PostgresTaskRepository } from "@mimir/backend/core/task/infra/postgres.task.repository";
 import { FindAllTaskPaginated } from "@mimir/backend/core/task/use-cases/find-all-task-paginated";
 
@@ -10,7 +11,6 @@ import {
 import { PinoLogger } from "@mimir/backend/lib/pino-logger";
 import { queryParams, QueryParamsEnum } from "@mimir/backend/lib/query-params";
 
-import { Task } from "../domain/task";
 import { tasksResponseSchema } from "./task-response.schema";
 
 const route = createRoute({

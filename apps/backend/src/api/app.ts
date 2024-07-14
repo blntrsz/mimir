@@ -10,10 +10,9 @@ import { Task } from "@mimir/backend/core/task/domain/task";
 import { createUser } from "@mimir/backend/core/user/app/create-user.action";
 import { User } from "@mimir/backend/core/user/domain/user";
 
+import { InternalServerException } from "@mimir/backend/lib/exception";
+import { PinoLogger } from "@mimir/backend/lib/pino-logger";
 import { withRequestContext } from "@mimir/backend/lib/request.context";
-
-import { InternalServerException } from "../lib/exception";
-import { PinoLogger } from "../lib/pino-logger";
 
 export const app = new OpenAPIHono();
 
