@@ -38,7 +38,7 @@ export function TaskList() {
       {data.map((d) => (
         <Link to={`/${d.id}`} key={d.id}>
           <ListItem>
-            <ListItemButton>
+            <ListItemButton disabled={!!d.attributes.done_at}>
               <ListItemDecorator>
                 {d.attributes.done_at ? <CheckBox /> : <CheckBoxOutlineBlank />}
               </ListItemDecorator>

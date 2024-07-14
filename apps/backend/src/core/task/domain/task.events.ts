@@ -2,29 +2,23 @@ import { Task } from "./task";
 
 export interface TaskEventEmitter {
   emitTaskCreated(task: Task): Promise<void>;
+  emitTaskUpdated(prevTask: Task, currentTask: Task): Promise<void>;
 }
 
 export class TaskEvents {
   static createdV1(task: Task) {
-    const props = task.props;
     return {
       eventName: "TaskCreated:1",
-      body: {
-        description: props.description,
-        user_id: props.user_id,
-        done_at: props.done_at,
-      },
+      body: task.toEvent(),
     };
   }
 
-  static assignedV1(task: Task) {
-    const props = task.props;
+  static updatedV1(prevTask: Task, currentTask: Task) {
     return {
-      eventName: "TaskCreated:1",
+      eventName: "TaskUpdated:1",
       body: {
-        description: props.description,
-        user_id: props.user_id,
-        done_at: props.done_at,
+        prevTask: prevTask.toEvent(),
+        currentTask: currentTask.toEvent(),
       },
     };
   }

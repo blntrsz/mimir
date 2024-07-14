@@ -12,4 +12,8 @@ export class EventBridgeTaskEvents
   async emitTaskCreated(task: Task) {
     await this.publish(TaskEvents.createdV1(task));
   }
+
+  async emitTaskUpdated(prevTask: Task, currentTask: Task) {
+    await this.publish(TaskEvents.updatedV1(prevTask, currentTask));
+  }
 }

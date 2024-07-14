@@ -8,4 +8,10 @@ export interface TaskRepository {
   findAll(): Promise<Task[]>;
   findAllPaginated(params: PaginatedQueryParams): Promise<Paginated<Task>>;
   delete(id: TaskSchema["id"]): Promise<void>;
+  update(
+    params: Partial<Pick<TaskSchema, "description" | "user_id">> &
+      Pick<TaskSchema, "id"> & {
+        done_at?: boolean;
+      },
+  ): Promise<Task | null>;
 }

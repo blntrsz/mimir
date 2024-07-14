@@ -1,4 +1,4 @@
-import { sql } from "slonik";
+import { QueryResultRow, sql, SqlSqlToken } from "slonik";
 
 import {
   Task,
@@ -69,6 +69,44 @@ export class PostgresTaskRepository implements TaskRepository {
       await pool.query(sql.type(this.schema)`
         DELETE from ${sql.identifier([this.tableName])} where id = ${id};
       `);
+    });
+  }
+
+  update({
+    id,
+    ...params
+  }: Partial<Pick<TaskSchema, "description" | "user_id">> &
+    Pick<TaskSchema, "id"> & {
+      done_at?: boolean;
+    }) {
+    return useDatabasePool(async (pool) => {
+      const entries = Object.entries(params)
+        .map(([key, value]) => {
+          if (typeof value === "boolean") {
+            return value
+              ? sql`${sql.identifier([key])} = NOW()`
+              : sql`${sql.identifier([key])} = NULL`;
+          }
+
+          return value ? sql`${sql.identifier([key])} = ${value}` : undefined;
+        })
+        .filter(Boolean) as SqlSqlToken<QueryResultRow>[];
+      entries.push(sql`updated_at = NOW()`);
+
+      const tasks = await pool.query(sql.type(this.schema)`
+        UPDATE ${sql.identifier([this.tableName])}
+        SET ${sql.join(entries, sql`, `)}
+        WHERE id = ${id}
+        RETURNING *;
+      `);
+
+      const task = tasks.rows[0];
+
+      if (!task) {
+        return null;
+      }
+
+      return new Task(task);
     });
   }
 }
