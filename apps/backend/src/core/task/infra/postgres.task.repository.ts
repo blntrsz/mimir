@@ -17,7 +17,7 @@ export class PostgresTaskRepository implements TaskRepository {
   insert(props: Pick<TaskSchema, "description" | "user_id">): Promise<Task> {
     return useDatabasePool(async (pool) => {
       const result = await pool.query(sql.type(this.schema)`
-        INSERT INTO ${sql.identifier([this.tableName])} (description, userId)
+        INSERT INTO ${sql.identifier([this.tableName])} (description, user_id)
         VALUES (${props.description}, ${props.user_id ?? null})
         RETURNING *;
       `);
@@ -53,15 +53,13 @@ export class PostgresTaskRepository implements TaskRepository {
     return useDatabasePool(async (pool) => {
       const result = await pool.query(sql.type(this.schema)`
         SELECT * from ${sql.identifier([this.tableName])} 
-        LIMIT ${params.limit}
-        OFFSET ${params.offset};
+        LIMIT ${params["page[size]"] + 1}
+        OFFSET ${params["page[size]"] * params["page[number]"]};
       `);
 
       return new Paginated({
         data: result.rows.map((row) => new Task(row)),
-        page: params.page,
-        count: result.rowCount,
-        limit: params.limit,
+        ...params,
       });
     });
   }

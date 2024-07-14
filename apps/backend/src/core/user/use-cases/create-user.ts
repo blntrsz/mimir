@@ -21,30 +21,30 @@ export class CreateUser {
     this.logger.debug("Create user request", request);
 
     try {
-      const [user, error] = await createTransaction(async () => {
+      const transactionResult = await createTransaction(async () => {
         const existingUser = await this.userRepository.byEmail(request.email);
 
         if (existingUser) {
           this.logger.debug("User already exists", { existingUser });
-          return [undefined, new AlreadyExistsException("User")];
+          return new AlreadyExistsException("User");
         }
 
         const newUser = await this.userRepository.insert(request.email);
         this.logger.debug("User created", { user: newUser.toResponse() });
 
-        return [newUser, undefined];
+        return newUser;
       });
 
-      if (user) {
-        await this.userEventEmitter.emitUserCreated(user);
-        this.logger.debug("User created event has been emitted", {
-          user: user.toResponse(),
-        });
-
-        return [user, undefined];
+      if (transactionResult instanceof AlreadyExistsException) {
+        return [undefined, transactionResult];
       }
 
-      return [undefined, error];
+      await this.userEventEmitter.emitUserCreated(transactionResult);
+      this.logger.debug("User created event has been emitted", {
+        user: transactionResult.toResponse(),
+      });
+
+      return [transactionResult, undefined];
     } catch (error) {
       this.logger.error("Failed to create user", { error });
       throw error;

@@ -4,7 +4,7 @@
   "scripts": {
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "dev": "dotenvx run --env-file=.env -- tsx --watch src/api | roarr pretty-print"
+    "dev": "dotenvx run --env-file=.env -- tsx --watch src/api | roarr pretty-print | pino-pretty"
   },
   "keywords": [],
   "author": "",
@@ -31,6 +31,7 @@
     "@dotenvx/dotenvx": "^1.6.2",
     "@roarr/cli": "^5.12.4",
     "@tsconfig/recommended": "^1.0.7",
-    "@types/better-sqlite3": "^7.6.11"
+    "@types/better-sqlite3": "^7.6.11",
+    "pino-pretty": "^11.2.1"
   }
 }

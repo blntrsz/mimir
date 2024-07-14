@@ -10,11 +10,9 @@ import { Task } from "@mimir/backend/core/task/domain/task";
 import { createUser } from "@mimir/backend/core/user/app/create-user.action";
 import { User } from "@mimir/backend/core/user/domain/user";
 
-import {
-  useRequestContext,
-  withRequestContext,
-} from "@mimir/backend/lib/request.context";
+import { withRequestContext } from "@mimir/backend/lib/request.context";
 
+import { InternalServerException } from "../lib/exception";
 import { PinoLogger } from "../lib/pino-logger";
 
 export const app = new OpenAPIHono();
@@ -35,18 +33,7 @@ app.use(async (_, next) => {
 app.onError((error, c) => {
   PinoLogger.instance.error("Internal Server Error", { error });
 
-  return c.json(
-    {
-      errors: [
-        {
-          id: useRequestContext().requestId,
-          code: "INTERNAL_SERVER_ERROR",
-          title: "Internal Server Error",
-        },
-      ],
-    },
-    500,
-  );
+  return c.json(new InternalServerException().toResponse(), 500);
 });
 app.doc("/openapi", {
   openapi: "3.0.0",
@@ -59,6 +46,7 @@ app.get("/swagger", swaggerUI({ url: "/openapi", persistAuthorization: true }));
 app.openAPIRegistry.registerComponent("securitySchemes", "Bearer", {
   type: "http",
   scheme: "bearer",
+  bearerFormat: "JWT",
 });
 
 const route = app

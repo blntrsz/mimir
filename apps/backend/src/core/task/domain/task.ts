@@ -4,7 +4,11 @@ import { Entity, id, timestamps } from "@mimir/backend/lib/entity";
 
 export const taskSchema = z.object({
   ...id,
-  user_id: z.string().nullable(),
+  user_id: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((user_id) => user_id ?? null),
   description: z.string(),
   done_at: z.date().nullable(),
   ...timestamps,

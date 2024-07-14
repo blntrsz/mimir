@@ -1,7 +1,7 @@
 import { User, UserSchema } from "@mimir/backend/core/user/domain/user";
 import { UserRepository } from "@mimir/backend/core/user/domain/user.repository";
 
-import { NotFoundException } from "@mimir/backend/lib/exception";
+import { Err, NotFoundException, Ok } from "@mimir/backend/lib/exception";
 import { Logger } from "@mimir/backend/lib/logger";
 
 export type GetUserByEmailRequest = Pick<UserSchema, "email">;
@@ -12,7 +12,9 @@ export class GetUserByEmail {
     private readonly userRepository: UserRepository,
   ) {}
 
-  async onRequest(request: GetUserByEmailRequest): Promise<User | null> {
+  async onRequest(
+    request: GetUserByEmailRequest,
+  ): Promise<Ok<User> | Err<NotFoundException>> {
     this.logger.debug("Get user by email request", request);
 
     try {
@@ -20,10 +22,10 @@ export class GetUserByEmail {
       this.logger.debug("User received from database", { user });
 
       if (!user) {
-        throw new NotFoundException("User");
+        return [undefined, new NotFoundException("User")];
       }
 
-      return user;
+      return [user, undefined];
     } catch (error) {
       this.logger.error("Failed to get user by id", {
         error,

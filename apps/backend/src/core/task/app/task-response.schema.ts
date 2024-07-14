@@ -4,7 +4,7 @@ import { z } from "@hono/zod-openapi";
 
 import { Task } from "@mimir/backend/core/task/domain/task";
 
-export const taskResponseSchema = z
+const taskSchema = z
   .object({
     id: z.string().openapi({
       description: "The id of the Task.",
@@ -59,3 +59,14 @@ export const taskResponseSchema = z
       },
     },
   });
+
+export const taskResponseSchema = z.object({
+  data: taskSchema,
+});
+export const tasksResponseSchema = z.object({
+  links: z.object({
+    prev: z.string().nullable(),
+    next: z.string().nullable(),
+  }),
+  data: z.array(taskSchema),
+});

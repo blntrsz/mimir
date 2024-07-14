@@ -1,14 +1,17 @@
-import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
+import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 
 import { PostgresTaskRepository } from "@mimir/backend/core/task/infra/postgres.task.repository";
 import { FindAllTaskPaginated } from "@mimir/backend/core/task/use-cases/find-all-task-paginated";
 
-import { badRequestError } from "@mimir/backend/lib/openapi";
-import { paginatedQueryParamsSchema } from "@mimir/backend/lib/paginated";
+import {
+  badRequestError,
+  internalServerError,
+} from "@mimir/backend/lib/openapi";
 import { PinoLogger } from "@mimir/backend/lib/pino-logger";
+import { queryParams, QueryParamsEnum } from "@mimir/backend/lib/query-params";
 
 import { Task } from "../domain/task";
-import { taskResponseSchema } from "./task-response.schema";
+import { tasksResponseSchema } from "./task-response.schema";
 
 const route = createRoute({
   method: "get",
@@ -16,18 +19,22 @@ const route = createRoute({
   tags: [Task.type],
   security: [{ Bearer: [] }],
   request: {
-    query: paginatedQueryParamsSchema,
+    query: queryParams.pick({
+      [QueryParamsEnum.PAGE_SIZE]: true,
+      [QueryParamsEnum.PAGE_NUMBER]: true,
+    }),
   },
   responses: {
     200: {
       content: {
         "application/json": {
-          schema: z.array(taskResponseSchema),
+          schema: tasksResponseSchema,
         },
       },
       description: "Retrieve the tasks paginated",
     },
     ...badRequestError,
+    ...internalServerError,
   },
 });
 
@@ -41,6 +48,6 @@ export const findAllTaskPaginated = new OpenAPIHono().openapi(
     const query = c.req.valid("query");
     const tasks = await createTaskUseCase.onRequest(query);
 
-    return c.json(tasks.data.map((task) => task.toResponse()));
+    return c.json(tasks.toJsonAPI(c.req.raw));
   },
 );

@@ -1,6 +1,6 @@
 import { z } from "@hono/zod-openapi";
 
-export const userResponseSchema = z
+const userSchema = z
   .object({
     id: z.string().openapi({
       description: "The id of the User.",
@@ -15,3 +15,7 @@ export const userResponseSchema = z
     }),
   })
   .openapi("User");
+
+export const userResponseSchema = z.object({
+  data: userSchema,
+});

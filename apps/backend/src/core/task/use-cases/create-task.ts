@@ -4,7 +4,7 @@ import { TaskRepository } from "@mimir/backend/core/task/domain/task.repository"
 import { UserRepository } from "@mimir/backend/core/user/domain/user.repository";
 
 import { createTransaction } from "@mimir/backend/lib/db";
-import { NotFoundException } from "@mimir/backend/lib/exception";
+import { Err, NotFoundException, Ok } from "@mimir/backend/lib/exception";
 import { Logger } from "@mimir/backend/lib/logger";
 
 export type CreateTaskRequest = Pick<TaskSchema, "description" | "user_id">;
@@ -17,32 +17,38 @@ export class CreateTask {
     private readonly userRepository: UserRepository,
   ) {}
 
-  async onRequest(request: CreateTaskRequest): Promise<Task> {
+  async onRequest(
+    request: CreateTaskRequest,
+  ): Promise<Ok<Task> | Err<NotFoundException>> {
     this.logger.debug("Create task request", request);
 
     try {
-      const task = await createTransaction(async () => {
+      const transactionResult = await createTransaction(async () => {
         if (request.user_id) {
           const user = await this.userRepository.byId(request.user_id);
           this.logger.debug("User requested", { user });
 
           if (!user) {
-            throw new NotFoundException("User");
+            return new NotFoundException("User");
           }
         }
 
         const newTask = await this.taskRepository.insert(request);
-        this.logger.debug("Task created", { task: task.toResponse() });
+        this.logger.debug("Task created", { task: newTask.toResponse() });
 
         return newTask;
       });
 
-      await this.taskEventEmitter.emitTaskCreated(task);
+      if (transactionResult instanceof NotFoundException) {
+        return [undefined, transactionResult];
+      }
+
+      await this.taskEventEmitter.emitTaskCreated(transactionResult);
       this.logger.debug("Task created event has been emitted", {
-        task: task.toResponse(),
+        task: transactionResult.toResponse(),
       });
 
-      return task;
+      return [transactionResult, undefined];
     } catch (error) {
       this.logger.error("Failed to create task", { error });
       throw error;

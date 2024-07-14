@@ -5,7 +5,6 @@ import { userSchema } from "@mimir/backend/core/user/domain/user";
 import { PostgresUserRepository } from "@mimir/backend/core/user/infra/postgres.user.repository";
 import { GetUserByEmail } from "@mimir/backend/core/user/use-cases/get-user-by-email";
 
-import { NotFound } from "@mimir/backend/lib/http.response";
 import { PinoLogger } from "@mimir/backend/lib/pino-logger";
 
 export const getUserByEmailHandlers = createFactory().createHandlers(
@@ -21,10 +20,10 @@ export const getUserByEmailHandlers = createFactory().createHandlers(
       PinoLogger.instance,
       new PostgresUserRepository(),
     );
-    const user = await createUserUseCase.onRequest(body);
+    const [user, error] = await createUserUseCase.onRequest(body);
 
-    if (!user) {
-      return new NotFound();
+    if (error) {
+      return c.json(error.toResponse(), 404);
     }
 
     return c.json(user.toResponse());

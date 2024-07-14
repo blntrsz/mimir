@@ -6,7 +6,11 @@ import { PostgresTaskRepository } from "@mimir/backend/core/task/infra/postgres.
 import { CreateTask } from "@mimir/backend/core/task/use-cases/create-task";
 import { PostgresUserRepository } from "@mimir/backend/core/user/infra/postgres.user.repository";
 
-import { badRequestError } from "@mimir/backend/lib/openapi";
+import { NotFoundException } from "@mimir/backend/lib/exception";
+import {
+  badRequestError,
+  internalServerError,
+} from "@mimir/backend/lib/openapi";
 import { PinoLogger } from "@mimir/backend/lib/pino-logger";
 
 import { taskResponseSchema } from "./task-response.schema";
@@ -37,7 +41,11 @@ const route = createRoute({
       },
       description: "Retrieve the tasks paginated",
     },
+    404: new NotFoundException("User").toDoc(
+      "The User's id is not found for the assignment.",
+    ),
     ...badRequestError,
+    ...internalServerError,
   },
 });
 
@@ -49,7 +57,16 @@ export const createTask = new OpenAPIHono().openapi(route, async (c) => {
     new EventBridgeTaskEvents(),
     new PostgresUserRepository(),
   );
-  const task = await createTaskUseCase.onRequest(body);
+  const [task, error] = await createTaskUseCase.onRequest(body);
 
-  return c.json(task.toResponse());
+  if (error) {
+    return c.json(error.toResponse(), 404);
+  }
+
+  return c.json(
+    {
+      data: task.toResponse(),
+    },
+    200,
+  );
 });

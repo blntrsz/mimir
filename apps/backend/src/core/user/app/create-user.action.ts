@@ -1,4 +1,4 @@
-import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
+import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 
 import { User, userSchema } from "@mimir/backend/core/user/domain/user";
 import { EventBridgeUserEvents } from "@mimir/backend/core/user/infra/event-bridge.user.events";
@@ -6,7 +6,10 @@ import { PostgresUserRepository } from "@mimir/backend/core/user/infra/postgres.
 import { CreateUser } from "@mimir/backend/core/user/use-cases/create-user";
 
 import { AlreadyExistsException } from "@mimir/backend/lib/exception";
-import { badRequestError } from "@mimir/backend/lib/openapi";
+import {
+  badRequestError,
+  internalServerError,
+} from "@mimir/backend/lib/openapi";
 import { PinoLogger } from "@mimir/backend/lib/pino-logger";
 
 import { userResponseSchema } from "./user-response.schema";
@@ -36,23 +39,9 @@ const route = createRoute({
       },
       description: "Retrieve the tasks paginated",
     },
-    409: {
-      content: {
-        "application/json": {
-          schema: z.object({
-            errors: z.array(
-              z.object({
-                id: z.string().uuid(),
-                title: z.literal(new AlreadyExistsException("User").message),
-                code: z.literal(new AlreadyExistsException("User").code),
-              }),
-            ),
-          }),
-        },
-      },
-      description: "The User already exists",
-    },
+    409: new AlreadyExistsException("User").toDoc("The User already exists."),
     ...badRequestError,
+    ...internalServerError,
   },
 });
 
@@ -69,5 +58,10 @@ export const createUser = new OpenAPIHono().openapi(route, async (c) => {
     return c.json(error.toResponse(), 409);
   }
 
-  return c.json(user.toResponse(), 200);
+  return c.json(
+    {
+      data: user.toResponse(),
+    },
+    200,
+  );
 });
