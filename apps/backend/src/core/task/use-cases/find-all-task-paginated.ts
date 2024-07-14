@@ -15,7 +15,7 @@ export class FindAllTaskPaginated {
   async onRequest(
     request: FindAllTaskPaginatedRequest,
   ): Promise<Paginated<Task>> {
-    this.logger.debug("Create task request", request);
+    this.logger.debug("Find all task paginated request", request);
 
     try {
       const tasks = await this.taskRepository.findAllPaginated(request);

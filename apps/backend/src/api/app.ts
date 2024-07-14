@@ -6,6 +6,7 @@ import { cors } from "hono/cors";
 
 import { createTask } from "@mimir/backend/core/task/app/create-task.action";
 import { findAllTaskPaginated } from "@mimir/backend/core/task/app/find-all-task-paginated.query";
+import { findOneTaskById } from "@mimir/backend/core/task/app/find-one-task-by-id.query";
 import { Task } from "@mimir/backend/core/task/domain/task";
 import { createUser } from "@mimir/backend/core/user/app/create-user.action";
 import { User } from "@mimir/backend/core/user/domain/user";
@@ -49,8 +50,9 @@ app.openAPIRegistry.registerComponent("securitySchemes", "Bearer", {
 });
 
 const route = app
-  .route(`/${Task.type}`, findAllTaskPaginated)
   .route(`/${Task.type}`, createTask)
+  .route(`/${Task.type}`, findOneTaskById)
+  .route(`/${Task.type}`, findAllTaskPaginated)
   .route(`/${User.type}`, createUser);
 
 export type AppType = typeof route;
