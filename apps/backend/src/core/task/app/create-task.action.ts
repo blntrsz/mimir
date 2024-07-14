@@ -6,6 +6,7 @@ import { PostgresTaskRepository } from "@mimir/backend/core/task/infra/postgres.
 import { CreateTask } from "@mimir/backend/core/task/use-cases/create-task";
 import { PostgresUserRepository } from "@mimir/backend/core/user/infra/postgres.user.repository";
 
+import { badRequestError } from "@mimir/backend/lib/openapi";
 import { PinoLogger } from "@mimir/backend/lib/pino-logger";
 
 import { taskResponseSchema } from "./task-response.schema";
@@ -14,6 +15,7 @@ const route = createRoute({
   method: "post",
   path: `/`,
   tags: [Task.type],
+  security: [{ Bearer: [] }],
   request: {
     body: {
       content: {
@@ -35,6 +37,7 @@ const route = createRoute({
       },
       description: "Retrieve the tasks paginated",
     },
+    ...badRequestError,
   },
 });
 

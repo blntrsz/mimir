@@ -6,6 +6,7 @@ import { PostgresUserRepository } from "@mimir/backend/core/user/infra/postgres.
 import { CreateUser } from "@mimir/backend/core/user/use-cases/create-user";
 
 import { AlreadyExistsException } from "@mimir/backend/lib/exception";
+import { badRequestError } from "@mimir/backend/lib/openapi";
 import { PinoLogger } from "@mimir/backend/lib/pino-logger";
 
 import { userResponseSchema } from "./user-response.schema";
@@ -14,6 +15,7 @@ const route = createRoute({
   method: "post",
   path: `/`,
   tags: [User.type],
+  security: [{ Bearer: [] }],
   request: {
     body: {
       content: {
@@ -50,6 +52,7 @@ const route = createRoute({
       },
       description: "The User already exists",
     },
+    ...badRequestError,
   },
 });
 

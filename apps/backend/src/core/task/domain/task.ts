@@ -1,9 +1,9 @@
 import { z } from "zod";
 
-import { Entity, timestamps } from "@mimir/backend/lib/entity";
+import { Entity, id, timestamps } from "@mimir/backend/lib/entity";
 
 export const taskSchema = z.object({
-  id: z.string(),
+  ...id,
   user_id: z.string().nullable(),
   description: z.string(),
   done_at: z.date().nullable(),
@@ -12,13 +12,24 @@ export const taskSchema = z.object({
 
 export type TaskSchema = z.infer<typeof taskSchema>;
 
-export class Task implements Entity {
+export class Task extends Entity<TaskSchema> {
   static readonly type = "tasks";
 
-  constructor(private readonly props: z.infer<typeof taskSchema>) {}
+  constructor(readonly props: z.infer<typeof taskSchema>) {
+    super();
+  }
 
-  toProps() {
-    return this.props;
+  private doneAt() {
+    return this.props.done_at ? this.props.done_at.toString() : null;
+  }
+
+  toEvent() {
+    return {
+      id: this.props.id,
+      user_id: this.props.user_id,
+      description: this.props.description,
+      done_at: this.doneAt(),
+    };
   }
 
   toResponse() {
@@ -28,7 +39,7 @@ export class Task implements Entity {
       attributes: {
         user_id: this.props.user_id,
         description: this.props.description,
-        done_at: this.props.done_at ? this.props.done_at?.toString() : null,
+        done_at: this.doneAt(),
       },
     };
   }

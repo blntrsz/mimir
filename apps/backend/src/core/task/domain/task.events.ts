@@ -6,7 +6,7 @@ export interface TaskEventEmitter {
 
 export class TaskEvents {
   static createdV1(task: Task) {
-    const props = task.toProps();
+    const props = task.props;
     return {
       eventName: "TaskCreated:1",
       body: {
@@ -18,7 +18,7 @@ export class TaskEvents {
   }
 
   static assignedV1(task: Task) {
-    const props = task.toProps();
+    const props = task.props;
     return {
       eventName: "TaskCreated:1",
       body: {

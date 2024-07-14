@@ -1,22 +1,27 @@
 import { z } from "zod";
 
-import { Entity, timestamps } from "@mimir/backend/lib/entity";
+import { Entity, id, timestamps } from "@mimir/backend/lib/entity";
 
 export const userSchema = z.object({
-  id: z.string(),
+  ...id,
   email: z.string().email(),
   ...timestamps,
 });
 
 export type UserSchema = z.infer<typeof userSchema>;
 
-export class User implements Entity {
+export class User extends Entity<UserSchema> {
   static readonly type = "users";
 
-  constructor(private readonly props: z.infer<typeof userSchema>) {}
+  constructor(readonly props: z.infer<typeof userSchema>) {
+    super();
+  }
 
-  toProps() {
-    return this.props;
+  toEvent() {
+    return {
+      id: this.props.id,
+      email: this.props.email,
+    };
   }
 
   toResponse() {
