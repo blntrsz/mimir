@@ -4,12 +4,12 @@ import {
 } from "@aws-sdk/client-eventbridge";
 import { z } from "zod";
 
-export interface EventBridgeEvent {
-  body: Record<string, any>;
-  eventName: string;
-}
+import {
+  Event,
+  EventEmitter,
+} from "@mimir/backend/core/event/domain/event-emitter";
 
-export class EventBridge {
+export class EventBridge implements EventEmitter {
   eventBridgeName: string;
   eventBridge: EventBridgeClient;
 
@@ -20,18 +20,18 @@ export class EventBridge {
       .parse(eventBridgeName ?? process.env.EVENTBRIDGE_NAME);
   }
 
-  publish(event: EventBridgeEvent) {
+  async publish(event: Event) {
     const command = new PutEventsCommand({
       Entries: [
         {
           Detail: JSON.stringify(event.body),
-          DetailType: event.eventName,
+          DetailType: event.name,
           EventBusName: this.eventBridgeName,
           Source: `mimir`,
         },
       ],
     });
 
-    return this.eventBridge.send(command);
+    await this.eventBridge.send(command);
   }
 }

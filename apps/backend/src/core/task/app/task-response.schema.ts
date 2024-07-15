@@ -2,9 +2,9 @@ import { randomUUID } from "node:crypto";
 
 import { z } from "@hono/zod-openapi";
 
-import { Task } from "@mimir/backend/core/task/domain/task";
+import { Task, taskSchema } from "@mimir/backend/core/task/domain/task";
 
-const taskSchema = z
+const dataSchema = z
   .object({
     id: z.string().openapi({
       description: "The id of the Task.",
@@ -12,17 +12,10 @@ const taskSchema = z
     type: z.string().openapi({
       description: "Type of the Task",
     }),
-    attributes: z.object({
-      user_id: z.string().nullable().openapi({
-        description:
-          "The User's id who is the assignee of the task, `null` if not assigneed to anyone.",
-      }),
-      description: z.string().openapi({
-        description: "The description of the Task.",
-      }),
-      done_at: z.string().nullable().openapi({
-        description: "The timestamp when the task is done.",
-      }),
+    attributes: taskSchema.pick({
+      description: true,
+      status: true,
+      user_id: true,
     }),
   })
   .openapi("Task")
@@ -32,7 +25,7 @@ const taskSchema = z
       type: Task.type,
       attributes: {
         user_id: null,
-        done_at: null,
+        status: "to_do",
         description: "Task newly created",
       },
     },
@@ -43,7 +36,7 @@ const taskSchema = z
       type: Task.type,
       attributes: {
         user_id: randomUUID(),
-        done_at: null,
+        status: "in_progress",
         description: "My task with user_id",
       },
     },
@@ -54,14 +47,14 @@ const taskSchema = z
       type: Task.type,
       attributes: {
         user_id: randomUUID(),
-        done_at: randomUUID(),
+        status: "done",
         description: "My task with user_id and done task",
       },
     },
   });
 
 export const taskResponseSchema = z.object({
-  data: taskSchema,
+  data: dataSchema,
 });
 export type TaskResponseSchema = z.infer<typeof taskResponseSchema>;
 export const tasksResponseSchema = z.object({
@@ -69,6 +62,6 @@ export const tasksResponseSchema = z.object({
     prev: z.string().nullable(),
     next: z.string().nullable(),
   }),
-  data: z.array(taskSchema),
+  data: z.array(dataSchema),
 });
 export type TasksResponseSchema = z.infer<typeof tasksResponseSchema>;

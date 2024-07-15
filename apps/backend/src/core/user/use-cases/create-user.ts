@@ -1,18 +1,20 @@
+import { EventEmitter } from "@mimir/backend/core/event/domain/event-emitter";
 import { User, UserSchema } from "@mimir/backend/core/user/domain/user";
-import { UserEventEmitter } from "@mimir/backend/core/user/domain/user.events";
 import { UserRepository } from "@mimir/backend/core/user/domain/user.repository";
 
 import { createTransaction } from "@mimir/backend/lib/db";
 import { AlreadyExistsException, Err, Ok } from "@mimir/backend/lib/exception";
 import { Logger } from "@mimir/backend/lib/logger";
 
+import { UserEvents } from "../domain/user.events";
+
 export type CreateUserRequest = Pick<UserSchema, "email">;
 
 export class CreateUser {
   constructor(
     private readonly logger: Logger,
+    private readonly eventEmitter: EventEmitter,
     private readonly userRepository: UserRepository,
-    private readonly userEventEmitter: UserEventEmitter,
   ) {}
 
   async onRequest(
@@ -39,7 +41,7 @@ export class CreateUser {
         return [undefined, transactionResult];
       }
 
-      await this.userEventEmitter.emitUserCreated(transactionResult);
+      await this.eventEmitter.publish(UserEvents.createdV1(transactionResult));
       this.logger.debug("User created event has been emitted", {
         user: transactionResult.toResponse(),
       });

@@ -1,7 +1,7 @@
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 
+import { EventBridge } from "@mimir/backend/core/event/infra/event-bridge.event-emittter";
 import { Task, taskSchema } from "@mimir/backend/core/task/domain/task";
-import { EventBridgeTaskEvents } from "@mimir/backend/core/task/infra/event-bridge.task.events";
 import { PostgresTaskRepository } from "@mimir/backend/core/task/infra/postgres.task.repository";
 import { CreateTask } from "@mimir/backend/core/task/use-cases/create-task";
 import { PostgresUserRepository } from "@mimir/backend/core/user/infra/postgres.user.repository";
@@ -53,8 +53,8 @@ export const createTask = new OpenAPIHono().openapi(route, async (c) => {
   const body = c.req.valid("json");
   const createTaskUseCase = new CreateTask(
     PinoLogger.instance,
+    new EventBridge(),
     new PostgresTaskRepository(),
-    new EventBridgeTaskEvents(),
     new PostgresUserRepository(),
   );
   const [task, error] = await createTaskUseCase.onRequest(body);

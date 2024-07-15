@@ -1,5 +1,6 @@
+import { EventEmitter } from "@mimir/backend/core/event/domain/event-emitter";
 import { Task, TaskSchema } from "@mimir/backend/core/task/domain/task";
-import { TaskEventEmitter } from "@mimir/backend/core/task/domain/task.events";
+import { TaskEvents } from "@mimir/backend/core/task/domain/task.events";
 import { TaskRepository } from "@mimir/backend/core/task/domain/task.repository";
 import { UserRepository } from "@mimir/backend/core/user/domain/user.repository";
 
@@ -12,8 +13,8 @@ export type CreateTaskRequest = Pick<TaskSchema, "description" | "user_id">;
 export class CreateTask {
   constructor(
     private readonly logger: Logger,
+    private readonly eventEmitter: EventEmitter,
     private readonly taskRepository: TaskRepository,
-    private readonly taskEventEmitter: TaskEventEmitter,
     private readonly userRepository: UserRepository,
   ) {}
 
@@ -43,7 +44,7 @@ export class CreateTask {
         return [undefined, transactionResult];
       }
 
-      await this.taskEventEmitter.emitTaskCreated(transactionResult);
+      await this.eventEmitter.publish(TaskEvents.createdV1(transactionResult));
       this.logger.debug("Task created event has been emitted", {
         task: transactionResult.toResponse(),
       });

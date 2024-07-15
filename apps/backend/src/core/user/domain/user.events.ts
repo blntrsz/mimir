@@ -7,7 +7,7 @@ export interface UserEventEmitter {
 export class UserEvents {
   static createdV1(user: User) {
     return {
-      eventName: "UserCreated:1",
+      name: "UserCreated:1",
       body: user.toEvent(),
     };
   }

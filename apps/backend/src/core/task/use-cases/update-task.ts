@@ -1,5 +1,9 @@
+import {
+  Event,
+  EventEmitter,
+} from "@mimir/backend/core/event/domain/event-emitter";
 import { Task, TaskSchema } from "@mimir/backend/core/task/domain/task";
-import { TaskEventEmitter } from "@mimir/backend/core/task/domain/task.events";
+import { TaskEvents } from "@mimir/backend/core/task/domain/task.events";
 import { TaskRepository } from "@mimir/backend/core/task/domain/task.repository";
 import { UserRepository } from "@mimir/backend/core/user/domain/user.repository";
 
@@ -8,7 +12,7 @@ import { Err, NotFoundException, Ok } from "@mimir/backend/lib/exception";
 import { Logger } from "@mimir/backend/lib/logger";
 
 export type UpdateTaskRequest = Partial<
-  Pick<TaskSchema, "description" | "user_id">
+  Pick<TaskSchema, "description" | "user_id" | "status">
 > &
   Pick<TaskSchema, "id"> & {
     done_at?: boolean;
@@ -17,8 +21,8 @@ export type UpdateTaskRequest = Partial<
 export class UpdateTask {
   constructor(
     private readonly logger: Logger,
+    private readonly eventEmitter: EventEmitter,
     private readonly taskRepository: TaskRepository,
-    private readonly taskEventEmitter: TaskEventEmitter,
     private readonly userRepository: UserRepository,
   ) {}
 
@@ -38,12 +42,12 @@ export class UpdateTask {
           }
         }
 
-        const prevTask = await this.taskRepository.findOneById(request.id);
+        const previousTask = await this.taskRepository.findOneById(request.id);
         this.logger.debug("Previous Task requested", {
-          task: prevTask?.toResponse(),
+          task: previousTask?.toResponse(),
         });
 
-        if (!prevTask) {
+        if (!previousTask) {
           return new NotFoundException("Task");
         }
 
@@ -55,7 +59,7 @@ export class UpdateTask {
         }
 
         return {
-          prevTask,
+          previousTask,
           currentTask,
         };
       });
@@ -64,18 +68,43 @@ export class UpdateTask {
         return [undefined, transactionResult];
       }
 
-      await this.taskEventEmitter.emitTaskUpdated(
-        transactionResult.prevTask,
-        transactionResult.currentTask,
+      const events: Event[] = [];
+
+      if (request.user_id) {
+        events.push(
+          TaskEvents.assignedV1(
+            transactionResult.previousTask,
+            transactionResult.currentTask,
+          ),
+        );
+      }
+      if (request.description) {
+        events.push(
+          TaskEvents.descriptionUpdatedV1(
+            transactionResult.previousTask,
+            transactionResult.currentTask,
+          ),
+        );
+      }
+      if (request.status) {
+        events.push(
+          TaskEvents.statusUpdatedV1(
+            transactionResult.previousTask,
+            transactionResult.currentTask,
+          ),
+        );
+      }
+
+      await Promise.all(
+        events.map((event) => this.eventEmitter.publish(event)),
       );
-      this.logger.debug("Task created event has been emitted", {
-        prevTask: transactionResult.prevTask.toProps(),
-        currentTask: transactionResult.currentTask.toProps(),
+      this.logger.debug("Task updated events has been emitted", {
+        events,
       });
 
       return [transactionResult.currentTask, undefined];
     } catch (error) {
-      this.logger.error("Failed to create task", { error });
+      this.logger.error("Failed to update task", { error });
       throw error;
     }
   }

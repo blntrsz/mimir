@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "@hono/zod-openapi";
 
 import { Entity, id, timestamps } from "@mimir/backend/lib/entity";
 
@@ -8,9 +8,17 @@ export const taskSchema = z.object({
     .string()
     .optional()
     .nullable()
-    .transform((user_id) => user_id ?? null),
-  description: z.string(),
-  done_at: z.date().nullable(),
+    .transform((user_id) => user_id ?? null)
+    .openapi({
+      description:
+        "The `User`'s id who is the assignee of the task, `null` if not assigneed to anyone.",
+    }),
+  description: z.string().openapi({
+    description: "The description of the `Task`",
+  }),
+  status: z.enum(["done", "in_progress", "to_do"]).default("to_do").openapi({
+    description: "The status of the `Task`",
+  }),
   ...timestamps,
 });
 
@@ -23,16 +31,12 @@ export class Task extends Entity<TaskSchema> {
     super();
   }
 
-  private doneAt() {
-    return this.props.done_at ? this.props.done_at.toString() : null;
-  }
-
   toEvent() {
     return {
       id: this.props.id,
       user_id: this.props.user_id,
       description: this.props.description,
-      done_at: this.doneAt(),
+      status: this.props.status,
     };
   }
 
@@ -43,7 +47,7 @@ export class Task extends Entity<TaskSchema> {
       attributes: {
         user_id: this.props.user_id,
         description: this.props.description,
-        done_at: this.doneAt(),
+        status: this.props.status,
       },
     };
   }

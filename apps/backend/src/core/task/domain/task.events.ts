@@ -1,24 +1,39 @@
 import { Task } from "./task";
 
-export interface TaskEventEmitter {
-  emitTaskCreated(task: Task): Promise<void>;
-  emitTaskUpdated(prevTask: Task, currentTask: Task): Promise<void>;
-}
-
 export class TaskEvents {
   static createdV1(task: Task) {
     return {
-      eventName: "TaskCreated:1",
+      name: "TaskCreated:1",
       body: task.toEvent(),
     };
   }
 
-  static updatedV1(prevTask: Task, currentTask: Task) {
+  static assignedV1(previousTask: Task, currentTask: Task) {
     return {
-      eventName: "TaskUpdated:1",
+      name: "TaskAssigned:1",
       body: {
-        prevTask: prevTask.toEvent(),
-        currentTask: currentTask.toEvent(),
+        previousAssignee: previousTask.toEvent().user_id,
+        currentAssignee: currentTask.toEvent().user_id,
+      },
+    };
+  }
+
+  static descriptionUpdatedV1(previousTask: Task, currentTask: Task) {
+    return {
+      name: "TaskDescriptionUpdated:1",
+      body: {
+        previousDescription: previousTask.toEvent().description,
+        currentDescription: currentTask.toEvent().description,
+      },
+    };
+  }
+
+  static statusUpdatedV1(previousTask: Task, currentTask: Task) {
+    return {
+      name: "TaskStatusUpdated:1",
+      body: {
+        previousStatus: previousTask.toEvent().status,
+        currentStatus: currentTask.toEvent().status,
       },
     };
   }

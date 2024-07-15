@@ -1,7 +1,6 @@
-import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
+import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 
-import { Task } from "@mimir/backend/core/task/domain/task";
-import { EventBridgeTaskEvents } from "@mimir/backend/core/task/infra/event-bridge.task.events";
+import { Task, taskSchema } from "@mimir/backend/core/task/domain/task";
 import { PostgresTaskRepository } from "@mimir/backend/core/task/infra/postgres.task.repository";
 import { PostgresUserRepository } from "@mimir/backend/core/user/infra/postgres.user.repository";
 
@@ -12,25 +11,26 @@ import {
 } from "@mimir/backend/lib/openapi";
 import { PinoLogger } from "@mimir/backend/lib/pino-logger";
 
+import { EventBridge } from "../../event/infra/event-bridge.event-emittter";
 import { UpdateTask } from "../use-cases/update-task";
 import { taskResponseSchema } from "./task-response.schema";
 
 const route = createRoute({
   method: "put",
-  path: `/{task_id}`,
+  path: `/{id}`,
   tags: [Task.type],
   security: [{ Bearer: [] }],
   request: {
-    params: z.object({
-      task_id: z.string().uuid(),
+    params: taskSchema.pick({
+      id: true,
     }),
     body: {
       content: {
         "application/json": {
-          schema: z.object({
-            done_at: z.boolean().optional(),
-            user_id: z.string().uuid().optional(),
-            description: z.string().optional(),
+          schema: taskSchema.pick({
+            user_id: true,
+            description: true,
+            status: true,
           }),
         },
       },
@@ -58,12 +58,12 @@ export const updateTask = new OpenAPIHono().openapi(route, async (c) => {
   const param = c.req.valid("param");
   const createTaskUseCase = new UpdateTask(
     PinoLogger.instance,
+    new EventBridge(),
     new PostgresTaskRepository(),
-    new EventBridgeTaskEvents(),
     new PostgresUserRepository(),
   );
   const [task, error] = await createTaskUseCase.onRequest({
-    id: param.task_id,
+    ...param,
     ...body,
   });
 

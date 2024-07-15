@@ -1,7 +1,7 @@
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 
+import { EventBridge } from "@mimir/backend/core/event/infra/event-bridge.event-emittter";
 import { User, userSchema } from "@mimir/backend/core/user/domain/user";
-import { EventBridgeUserEvents } from "@mimir/backend/core/user/infra/event-bridge.user.events";
 import { PostgresUserRepository } from "@mimir/backend/core/user/infra/postgres.user.repository";
 import { CreateUser } from "@mimir/backend/core/user/use-cases/create-user";
 
@@ -49,8 +49,8 @@ export const createUser = new OpenAPIHono().openapi(route, async (c) => {
   const body = c.req.valid("json");
   const createUserUseCase = new CreateUser(
     PinoLogger.instance,
+    new EventBridge(),
     new PostgresUserRepository(),
-    new EventBridgeUserEvents(),
   );
   const [user, error] = await createUserUseCase.onRequest(body);
 
