@@ -4,7 +4,7 @@ import { TaskRepository } from "@mimir/backend/core/task/domain/task.repository"
 import { Logger } from "@mimir/backend/lib/logger";
 import { Paginated, PaginatedQueryParams } from "@mimir/backend/lib/paginated";
 
-export type FindAllTaskPaginatedRequest = PaginatedQueryParams;
+type Request = PaginatedQueryParams;
 
 export class FindAllTaskPaginated {
   constructor(
@@ -12,9 +12,7 @@ export class FindAllTaskPaginated {
     private readonly taskRepository: TaskRepository,
   ) {}
 
-  async onRequest(
-    request: FindAllTaskPaginatedRequest,
-  ): Promise<Paginated<Task>> {
+  async onRequest(request: Request): Promise<Paginated<Task>> {
     this.logger.debug("Find all task paginated request", request);
 
     try {

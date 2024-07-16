@@ -56,9 +56,11 @@ export function UpdateTaskForm() {
         {...actionInputProps}
         key={actionInputProps.key}
       />
-      <Button type="submit" disabled={isSubmitting} className="mt-4">
-        Save
-      </Button>
+      <div className="mt-4 flex flex-col gap-2">
+        <Button type="submit" disabled={isSubmitting} className="w-full">
+          Save
+        </Button>
+      </div>
     </Form>
   );
 }

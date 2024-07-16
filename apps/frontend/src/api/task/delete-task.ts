@@ -1,26 +1,23 @@
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { QueryClient } from "@tanstack/react-query";
-import { json, useActionData, useLoaderData } from "react-router-dom";
+import { json, redirect, useActionData, useLoaderData } from "react-router-dom";
 import { z } from "zod";
 
 import { client } from "@mimir/frontend/api/http";
 
 import { taskKeys } from "./keys";
 
-export const UPDATE_TASK_ACTION = "update-task";
+export const DELETE_TASK_ACTION = "delete-task";
 
 const schema = z.object({
   id: z.string(),
-  user_id: z.string().optional(),
-  status: z.enum(["to_do", "in_progress", "done"]).optional(),
-  description: z.string().min(5),
-  _action: z.literal(UPDATE_TASK_ACTION),
+  _action: z.literal(DELETE_TASK_ACTION),
 });
 
-export type UpdateTaskActionError = z.typeToFlattenedError<typeof schema>;
+export type DeleteTaskActionError = z.typeToFlattenedError<typeof schema>;
 
-export async function updateTaskAction(
+export async function deleteTaskAction(
   formData: FormData,
   queryClient: QueryClient,
 ) {
@@ -34,30 +31,24 @@ export async function updateTaskAction(
     return json(submission.reply());
   }
 
-  const result = await client.tasks[":id"].$put({
+  await client.tasks[":id"].$delete({
     param: {
       id: submission.value.id,
     },
-    json: submission.value,
   });
 
-  await queryClient.invalidateQueries({
-    queryKey: taskKeys.detail(submission.value.id),
-  });
   queryClient.invalidateQueries({
     queryKey: taskKeys.lists(),
   });
 
-  return json({
-    result: await result.json(),
-  });
+  return redirect("/");
 }
 
-export function useUpdateTaskForm() {
+export function useDeleteTaskForm() {
   const { id } = useLoaderData() as { id: number };
   const lastResult = useActionData() as any;
   return useForm({
-    id: `${UPDATE_TASK_ACTION}-${id}`,
+    id: `${DELETE_TASK_ACTION}-${id}`,
     shouldValidate: "onBlur",
     lastResult,
     onValidate({ formData }) {

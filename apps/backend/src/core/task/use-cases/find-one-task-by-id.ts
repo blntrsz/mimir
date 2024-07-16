@@ -4,7 +4,7 @@ import { TaskRepository } from "@mimir/backend/core/task/domain/task.repository"
 import { Err, NotFoundException, Ok } from "@mimir/backend/lib/exception";
 import { Logger } from "@mimir/backend/lib/logger";
 
-export type FindOneTaskByIdRequest = Pick<TaskSchema, "id">;
+type Request = Pick<TaskSchema, "id">;
 
 export class FindOneTaskById {
   constructor(
@@ -13,7 +13,7 @@ export class FindOneTaskById {
   ) {}
 
   async onRequest(
-    request: FindOneTaskByIdRequest,
+    request: Request,
   ): Promise<Ok<Task> | Err<NotFoundException>> {
     this.logger.debug("Find one task by id", request);
 

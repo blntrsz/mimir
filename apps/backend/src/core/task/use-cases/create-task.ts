@@ -8,7 +8,7 @@ import { createTransaction } from "@mimir/backend/lib/db";
 import { Err, NotFoundException, Ok } from "@mimir/backend/lib/exception";
 import { Logger } from "@mimir/backend/lib/logger";
 
-export type CreateTaskRequest = Pick<TaskSchema, "description" | "user_id">;
+type Request = Pick<TaskSchema, "description" | "user_id">;
 
 export class CreateTask {
   constructor(
@@ -19,7 +19,7 @@ export class CreateTask {
   ) {}
 
   async onRequest(
-    request: CreateTaskRequest,
+    request: Request,
   ): Promise<Ok<Task> | Err<NotFoundException>> {
     this.logger.debug("Create task request", request);
 

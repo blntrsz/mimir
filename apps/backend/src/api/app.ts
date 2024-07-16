@@ -16,6 +16,8 @@ import { InternalServerException } from "@mimir/backend/lib/exception";
 import { PinoLogger } from "@mimir/backend/lib/pino-logger";
 import { withRequestContext } from "@mimir/backend/lib/request.context";
 
+import { deleteTask } from "../core/task/app/delete-task.action";
+
 export const app = new OpenAPIHono();
 
 app.use("/*", cors());
@@ -55,6 +57,7 @@ const route = app
   .route(`/${Task.type}`, findOneTaskById)
   .route(`/${Task.type}`, findAllTaskPaginated)
   .route(`/${Task.type}`, updateTask)
+  .route(`/${Task.type}`, deleteTask)
   .route(`/${User.type}`, createUser);
 
 export type AppType = typeof route;

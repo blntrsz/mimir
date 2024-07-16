@@ -37,4 +37,13 @@ export class TaskEvents {
       },
     };
   }
+
+  static deletedV1(id: string) {
+    return {
+      name: "TaskDeleted:1",
+      body: {
+        id,
+      },
+    };
+  }
 }

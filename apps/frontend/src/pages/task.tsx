@@ -11,15 +11,17 @@ import {
   useFindOneTaskByIdQuery,
 } from "@mimir/frontend/api/task/find-one-task-by-id";
 
+import { deleteTaskAction } from "../api/task/delete-task";
 import { updateTaskAction } from "../api/task/update-task";
+import { DeleteTaskForm } from "../features/delete-task-form";
 import { UpdateTaskForm } from "../features/update-task-form";
 
 export async function loader({ params }: LoaderFunctionArgs) {
-  const taskId = params.task_id!;
+  const id = params.id!;
 
   try {
     const [findOneTaskByIdLoaderData] = await Promise.all([
-      findOneTaskByIdLoader(queryClient, taskId),
+      findOneTaskByIdLoader(queryClient, id),
     ]);
 
     return json({
@@ -32,11 +34,12 @@ export async function loader({ params }: LoaderFunctionArgs) {
 }
 
 export async function action(args: ActionFunctionArgs) {
-  const result = await updateTaskAction(args, queryClient);
+  const formData = await args.request.formData();
 
-  if (result) {
-    return result;
-  }
+  const updateTaskActionResult = await updateTaskAction(formData, queryClient);
+  const deleteTaskActionResult = await deleteTaskAction(formData, queryClient);
+
+  return updateTaskActionResult ?? deleteTaskActionResult;
 }
 
 export function Component() {
@@ -49,7 +52,10 @@ export function Component() {
         <h1 className="text-3xl">Task</h1>
         <small className="text-gray-400">#{id}</small>
       </div>
-      <UpdateTaskForm />
+      <div className="grid gap-2">
+        <UpdateTaskForm />
+        <DeleteTaskForm />
+      </div>
     </>
   );
 }

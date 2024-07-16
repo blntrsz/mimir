@@ -11,9 +11,7 @@ import { createTransaction } from "@mimir/backend/lib/db";
 import { Err, NotFoundException, Ok } from "@mimir/backend/lib/exception";
 import { Logger } from "@mimir/backend/lib/logger";
 
-export type UpdateTaskRequest = Partial<
-  Pick<TaskSchema, "description" | "user_id" | "status">
-> &
+type Request = Partial<Pick<TaskSchema, "description" | "user_id" | "status">> &
   Pick<TaskSchema, "id"> & {
     done_at?: boolean;
   };
@@ -27,14 +25,14 @@ export class UpdateTask {
   ) {}
 
   async onRequest(
-    request: UpdateTaskRequest,
+    request: Request,
   ): Promise<Ok<Task> | Err<NotFoundException>> {
     this.logger.debug("Update task request", request);
 
     try {
       const transactionResult = await createTransaction(async () => {
         if (request.user_id) {
-          const user = await this.userRepository.byId(request.user_id);
+          const user = await this.userRepository.findOneById(request.user_id);
           this.logger.debug("User requested", { user });
 
           if (!user) {

@@ -1,60 +1,61 @@
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 
-import { Task } from "@mimir/backend/core/task/domain/task";
+import { EventBridge } from "@mimir/backend/core/event/infra/event-bridge.event-emittter";
+import { Task, taskSchema } from "@mimir/backend/core/task/domain/task";
 import { PostgresTaskRepository } from "@mimir/backend/core/task/infra/postgres.task.repository";
-import { FindOneTaskById } from "@mimir/backend/core/task/use-cases/find-one-task-by-id";
 
-import { NotFoundException } from "@mimir/backend/lib/exception";
 import {
   badRequestError,
   internalServerError,
 } from "@mimir/backend/lib/openapi";
 import { PinoLogger } from "@mimir/backend/lib/pino-logger";
 
-import { taskResponseSchema } from "./task-response.schema";
+import { DeleteTask } from "../use-cases/delete-task";
 
 const route = createRoute({
-  method: "get",
+  method: "delete",
   path: `/{id}`,
   tags: [Task.type],
   security: [{ Bearer: [] }],
   request: {
-    params: z.object({
-      id: z.string().uuid(),
+    params: taskSchema.pick({
+      id: true,
     }),
   },
   responses: {
     200: {
       content: {
         "application/json": {
-          schema: taskResponseSchema,
+          schema: z.object({
+            data: z.object({
+              id: z.string(),
+              type: z.string(),
+            }),
+          }),
         },
       },
       description: "Retrieve the tasks paginated",
     },
-    404: new NotFoundException("User").toDoc("The Task does not exists."),
     ...badRequestError,
     ...internalServerError,
   },
 });
 
-export const findOneTaskById = new OpenAPIHono().openapi(route, async (c) => {
+export const deleteTask = new OpenAPIHono().openapi(route, async (c) => {
   const param = c.req.valid("param");
-  const createTaskUseCase = new FindOneTaskById(
+  const useCase = new DeleteTask(
     PinoLogger.instance,
+    new EventBridge(),
     new PostgresTaskRepository(),
   );
-  const [task, error] = await createTaskUseCase.onRequest({
-    id: param.id,
-  });
-
-  if (error) {
-    return c.json(error.toResponse(), 404);
-  }
+  await useCase.onRequest(param);
 
   return c.json(
     {
-      data: task.toResponse(),
+      data: {
+        type: Task.type,
+        id: param.id,
+      },
     },
     200,
   );

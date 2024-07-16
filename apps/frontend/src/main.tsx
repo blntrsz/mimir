@@ -21,7 +21,7 @@ const router = createBrowserRouter([
         lazy: () => import("./pages/home"),
       },
       {
-        path: "/:task_id",
+        path: "/:id",
         lazy: () => import("./pages/task"),
       },
     ],

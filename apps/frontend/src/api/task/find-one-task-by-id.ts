@@ -6,9 +6,9 @@ import { client } from "@mimir/frontend/api/http";
 import { taskKeys } from "./keys";
 
 async function findOneTaskById(id: string) {
-  const response = await client.tasks[":task_id"].$get({
+  const response = await client.tasks[":id"].$get({
     param: {
-      task_id: id,
+      id,
     },
   });
 
@@ -37,7 +37,7 @@ export const findOneTaskByIdLoader = async (
 
 export function useFindOneTaskByIdQuery() {
   const params = useParams();
-  const id = String(params.task_id);
+  const id = String(params.id);
   const { findOneTaskByIdLoaderData: initialData } = useLoaderData() as {
     findOneTaskByIdLoaderData: FindOneTaskByIdResponse;
   };
