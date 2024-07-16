@@ -31,6 +31,10 @@ export class Task extends Entity<TaskSchema> {
     super();
   }
 
+  static toEntity(props: TaskSchema) {
+    return new Task(props);
+  }
+
   toEvent() {
     return {
       id: this.props.id,

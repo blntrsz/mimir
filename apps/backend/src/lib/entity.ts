@@ -2,12 +2,13 @@ import { z } from "zod";
 
 export abstract class Entity<TProps extends Record<string, unknown>> {
   protected abstract props: TProps;
-  abstract toResponse(): unknown;
-  abstract toEvent(): unknown;
+  // abstract toResponse(): unknown;
+  // abstract toEvent(): unknown;
+  // abstract toPersistence(): unknown;
+  // abstract toDomain<TProps extends Record<string, unknown>>(
+  //   props: TProps,
+  // ): Entity<TProps>;
 
-  /**
-   * Only use for internal purposes, e.g. Logging
-   */
   toProps() {
     return this.props;
   }

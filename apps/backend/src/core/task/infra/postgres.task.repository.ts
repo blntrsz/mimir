@@ -7,24 +7,16 @@ import {
 } from "@mimir/backend/core/task/domain/task";
 import { TaskRepository } from "@mimir/backend/core/task/domain/task.repository";
 
-import { useDatabasePool } from "@mimir/backend/lib/db";
+import { BaseRepository, useDatabasePool } from "@mimir/backend/lib/db";
 import { Paginated, PaginatedQueryParams } from "@mimir/backend/lib/paginated";
 
-export class PostgresTaskRepository implements TaskRepository {
+export class PostgresTaskRepository
+  extends BaseRepository<typeof taskSchema, Task>
+  implements TaskRepository
+{
   protected tableName = Task.type;
   protected schema = taskSchema;
-
-  insert(props: Pick<TaskSchema, "description" | "user_id">): Promise<Task> {
-    return useDatabasePool(async (pool) => {
-      const result = await pool.query(sql.type(this.schema)`
-        INSERT INTO ${sql.identifier([this.tableName])} (description, user_id)
-        VALUES (${props.description}, ${props.user_id ?? null})
-        RETURNING *;
-      `);
-
-      return new Task(result.rows[0]);
-    });
-  }
+  protected toEntity = Task.toEntity;
 
   findOneById(id: string): Promise<Task | null> {
     return useDatabasePool(async (pool) => {

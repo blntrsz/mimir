@@ -4,7 +4,8 @@
   "scripts": {
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "dev": "dotenvx run --env-file=.env -- tsx --watch src/api | roarr pretty-print | pino-pretty"
+    "dev": "dotenvx run --env-file=.env -- tsx --watch src/api | roarr pretty-print | pino-pretty",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",
@@ -25,6 +26,7 @@
     "pino": "^9.2.0",
     "slonik": "32",
     "tsx": "^4.16.2",
+    "typescript": "^5.2.2",
     "zod": "^3.23.8"
   },
   "devDependencies": {

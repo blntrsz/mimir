@@ -35,7 +35,7 @@ export class CreateTask {
         }
 
         const newTask = await this.taskRepository.insert(request);
-        this.logger.debug("Task created", { task: newTask.toResponse() });
+        this.logger.debug("Task created", { task: newTask.toProps() });
 
         return newTask;
       });

@@ -2,10 +2,12 @@ import {
   createPool as createSlonikPool,
   DatabasePool,
   DatabaseTransactionConnection,
+  sql,
 } from "slonik";
-import { z } from "zod";
+import { z, ZodTypeAny } from "zod";
 
 import { Context } from "./context";
+import { Entity } from "./entity";
 
 const POSTGRES_CONNECTION_URI = z
   .string()
@@ -48,6 +50,32 @@ export async function createTransaction<T>(
         return callback(pool);
       });
       return result;
+    });
+  }
+}
+
+export abstract class BaseRepository<
+  TSchema extends ZodTypeAny,
+  TEntity extends Entity<any>,
+> {
+  protected abstract tableName: string;
+  protected abstract schema: TSchema;
+  protected abstract toEntity: (props: z.infer<typeof this.schema>) => TEntity;
+
+  async insert(entity: Partial<z.infer<typeof this.schema>>): Promise<TEntity> {
+    return useDatabasePool(async (pool) => {
+      const keys = Object.keys(entity);
+      const values = Object.values(entity);
+
+      const schemaType = this.schema as ZodTypeAny;
+
+      const result = await pool.query(sql.type(schemaType)`
+        INSERT INTO ${sql.identifier([this.tableName])} (${sql.join(keys, sql`, `)})
+        VALUES (${sql.join(values, sql`, `)})
+        RETURNING *;
+      `);
+
+      return this.toEntity(result.rows[0]);
     });
   }
 }

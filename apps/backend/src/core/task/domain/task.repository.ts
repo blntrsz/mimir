@@ -1,9 +1,10 @@
+import { BaseRepository } from "@mimir/backend/lib/db";
 import { Paginated, PaginatedQueryParams } from "@mimir/backend/lib/paginated";
 
-import { Task, TaskSchema } from "./task";
+import { Task, TaskSchema, taskSchema } from "./task";
 
-export interface TaskRepository {
-  insert(props: Pick<TaskSchema, "description" | "user_id">): Promise<Task>;
+export interface TaskRepository
+  extends BaseRepository<typeof taskSchema, Task> {
   findOneById(id: TaskSchema["id"]): Promise<Task | null>;
   findAll(): Promise<Task[]>;
   findAllPaginated(params: PaginatedQueryParams): Promise<Paginated<Task>>;
