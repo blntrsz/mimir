@@ -27,11 +27,13 @@ const route = createRoute({
     body: {
       content: {
         "application/json": {
-          schema: taskSchema.pick({
-            user_id: true,
-            description: true,
-            status: true,
-          }),
+          schema: taskSchema
+            .pick({
+              user_id: true,
+              description: true,
+              status: true,
+            })
+            .partial(),
         },
       },
     },

@@ -1,7 +1,7 @@
 export const userKeys = {
   all: ["users"] as const,
-  lists: () => [...taskKeys.all, "list"] as const,
-  list: (filters: any) => [...taskKeys.lists(), { filters }] as const,
-  details: () => [...taskKeys.all, "detail"] as const,
-  detail: (id: number) => [...taskKeys.details(), id] as const,
+  lists: () => [...userKeys.all, "list"] as const,
+  list: (filters: any) => [...userKeys.lists(), { filters }] as const,
+  details: () => [...userKeys.all, "detail"] as const,
+  detail: (id: number) => [...userKeys.details(), id] as const,
 };
