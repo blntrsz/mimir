@@ -48,11 +48,13 @@ export function Component() {
 
   return (
     <>
-      <div className="gap-6">
-        <h1 className="text-3xl">Task</h1>
-        <small className="text-gray-400">#{id}</small>
+      <div className="flex justify-between gap-6">
+        <div className="">
+          <h1 className="text-3xl">Task</h1>
+          <small className="text-gray-400">#{id}</small>
+        </div>
       </div>
-      <div className="grid gap-2">
+      <div className="grid w-full gap-2">
         <UpdateTaskForm />
         <DeleteTaskForm />
       </div>

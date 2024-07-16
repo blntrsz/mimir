@@ -15,6 +15,8 @@ import {
   useUpdateTaskForm,
 } from "@mimir/frontend/api/task/update-task";
 
+import { UpdateTaskStateForm } from "./update-task-state-form";
+
 export function UpdateTaskForm() {
   const query = useFindOneTaskByIdQuery();
   const [form, fields] = useUpdateTaskForm();
@@ -32,23 +34,26 @@ export function UpdateTaskForm() {
   });
 
   return (
-    <Form method="post" {...getFormProps(form)}>
-      <FormControl error={!!fields.description.errors}>
-        <FormLabel>Task Description</FormLabel>
-        <Input
-          {...descriptionInputProps}
-          key={descriptionInputProps.key}
-          defaultValue={attributes.description}
-          readOnly={isSubmitting}
-          placeholder="Type in here…"
-        />
-        {fields.description.errors && (
-          <FormHelperText>
-            <InfoOutlined />
-            {fields.description.errors}
-          </FormHelperText>
-        )}
-      </FormControl>
+    <Form className="w-full" method="post" {...getFormProps(form)}>
+      <div className="flex w-full flex-1 items-end gap-8">
+        <FormControl className="w-full" error={!!fields.description.errors}>
+          <FormLabel>Task Description</FormLabel>
+          <Input
+            {...descriptionInputProps}
+            key={descriptionInputProps.key}
+            defaultValue={attributes.description}
+            readOnly={isSubmitting}
+            placeholder="Type in here…"
+          />
+          {fields.description.errors && (
+            <FormHelperText>
+              <InfoOutlined />
+              {fields.description.errors}
+            </FormHelperText>
+          )}
+        </FormControl>
+        <UpdateTaskStateForm />
+      </div>
       <input readOnly value={id} {...idInputProps} key={idInputProps.key} />
       <input
         readOnly
