@@ -17,6 +17,10 @@ export class User extends Entity<UserSchema> {
     super();
   }
 
+  static toEntity(props: UserSchema) {
+    return new User(props);
+  }
+
   toEvent() {
     return {
       id: this.props.id,

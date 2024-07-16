@@ -26,7 +26,7 @@ export class CreateTask {
     try {
       const transactionResult = await createTransaction(async () => {
         if (request.user_id) {
-          const user = await this.userRepository.byId(request.user_id);
+          const user = await this.userRepository.findOneById(request.user_id);
           this.logger.debug("User requested", { user });
 
           if (!user) {

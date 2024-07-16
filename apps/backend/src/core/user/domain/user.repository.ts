@@ -1,7 +1,6 @@
-import { User, UserSchema } from "./user";
+import { BaseRepository } from "@mimir/backend/lib/db";
 
-export interface UserRepository {
-  insert(email: UserSchema["email"]): Promise<User>;
-  byEmail(email: UserSchema["email"]): Promise<User | null>;
-  byId(id: UserSchema["id"]): Promise<User | null>;
-}
+import { User, userSchema } from "./user";
+
+export interface UserRepository
+  extends BaseRepository<typeof userSchema, User> {}
